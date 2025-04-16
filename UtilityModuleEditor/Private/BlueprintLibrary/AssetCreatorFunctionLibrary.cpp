@@ -13,10 +13,12 @@
 #include "Components/GridPanel.h"
 #include "Factories/TextureFromBufferFactory.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#endif
 
 UObject* UAtkAssetCreatorFunctionLibrary::CreateAssetInPackageWithUniqueName(const FString& PackagePath,
 	UClass* AssetClass, const FString& BaseName, UFactory* Factory)
 {
+    #if WITH_EDITOR
 	// Ensure the asset name is unique
 	FString OutPackageName = BaseName;
 	FString UniqueAssetName = BaseName;
@@ -32,11 +34,15 @@ UObject* UAtkAssetCreatorFunctionLibrary::CreateAssetInPackageWithUniqueName(con
 	FString Message;
 	bool bResult = false;
 	return CreateAsset(OutPackageName, AssetClass, Factory, bResult, Message);
+    #else
+    return nullptr;
+    #endif
 }
 
 UObject* UAtkAssetCreatorFunctionLibrary::CreateAsset(const FString& AssetPath, UClass* AssetClass, UFactory* Factory,
                                                    bool& bOutSuccess, FString& OutInfoMessage)
 {
+    #if WITH_EDITOR
 	IAssetTools& AssetTools =FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	UFactory* Factory1 = Factory;
 	if(!Factory1)
@@ -75,11 +81,15 @@ UObject* UAtkAssetCreatorFunctionLibrary::CreateAsset(const FString& AssetPath, 
 	bOutSuccess = true;
 	OutInfoMessage = FString::Printf(TEXT("Create Asset Successfully Created '%s'"), *AssetPath);
 	return Asset;
+    #else
+    return nullptr;
+    #endif
 }
 
-UTexture2D* UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString& AssetPath, TArray<uint8>& Data,
+UTexture2D* UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString& AssetPath, const TArray<uint8>& Data,
 											uint32 Width, uint32 Height, bool& bOutSuccess, FString& OutInfoMessage)
 {
+    #if WITH_EDITOR
 	if(Data.IsEmpty())
 	{
 		bOutSuccess = false;
@@ -89,11 +99,15 @@ UTexture2D* UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const 
 	
 	uint8* Buffer = Data.GetData();
 	return CreateTextureAssetFromBuffer(AssetPath, Buffer, Width, Height, bOutSuccess, OutInfoMessage);
+    #else
+    return nullptr;
+    #endif
 }
 
 UTexture2D* UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString& AssetPath, uint8* Data,
 	uint32 Width, uint32 Height, bool& bOutSuccess, FString& OutInfoMessage)
 {
+    #if WITH_EDITOR
 	if(!Data)
 	{
 		bOutSuccess = false;
@@ -106,18 +120,27 @@ UTexture2D* UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const 
 	Factory->Buffer = Data;
 	
 	return Cast<UTexture2D>(CreateAsset(AssetPath, UTexture2D::StaticClass(), Factory, bOutSuccess, OutInfoMessage));
+    #else
+    return nullptr;
+    #endif
 }
 
 FString UAtkAssetCreatorFunctionLibrary::CreateUniqueAssetNameInPackage(const FString& PackagePath, const FString& BaseAssetName,UClass* AssetClass)
 {
 	// Create a package to hold the new asset
+    #if WITH_EDITOR
 	UPackage* Package = CreatePackage(*PackagePath);
 	return MakeUniqueObjectName(Package, AssetClass, FName(*BaseAssetName)).ToString();
+    #else
+    return FString();
+    #endif
 }
 
 bool UAtkAssetCreatorFunctionLibrary::SaveAsset(const FString& AssetPath, FString& OutInfoMessage)
 {
-	UObject* asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+    bool result = false;
+    #if WITH_EDITOR
+    UObject* asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
 	if(!asset)
 	{
 		OutInfoMessage = FString::Printf(TEXT("Save Asset Failed - Asset is not valid '%s'"),*AssetPath);
@@ -131,17 +154,19 @@ bool UAtkAssetCreatorFunctionLibrary::SaveAsset(const FString& AssetPath, FStrin
 		return false;
 	}
 
-	bool result = UEditorLoadingAndSavingUtils::SavePackages({package}, false);
+	result = UEditorLoadingAndSavingUtils::SavePackages({package}, false);
 	OutInfoMessage = FString::Printf(TEXT("Save Asset %s - '%s'"), *FString(result ? "Success" : "Failed"), *AssetPath);
-	return result;
+	#endif
+    return result;
 }
 
 TArray<UObject*> UAtkAssetCreatorFunctionLibrary::GetModifiedAssets(bool& OutResult, FString& OutInfoMessage)
 {
+	TArray<UObject*> assets = TArray<UObject*>();
+    #if WITH_EDITOR
 	TArray<UPackage*> ModifiedPackages = TArray<UPackage*>();
 	FEditorFileUtils::GetDirtyPackages(ModifiedPackages);
 
-	TArray<UObject*> assets = TArray<UObject*>();
 	OutResult = true;
 	OutInfoMessage = ("Get Modified Assets Succeeded");
 	for(const UPackage* package : ModifiedPackages)
@@ -161,13 +186,14 @@ TArray<UObject*> UAtkAssetCreatorFunctionLibrary::GetModifiedAssets(bool& OutRes
 			OutInfoMessage += FString::Printf(TEXT("'%s', "), *package->GetName());
 		}
 	}
-
+    #endif
 	return assets;
 }
 
 bool UAtkAssetCreatorFunctionLibrary::SaveModifiedAssets(bool bPrompt, FString& OutInfoMessage)
 {
 	bool result = false;
+    #if WITH_EDITOR
 	if(bPrompt)
 	{
 		result = UEditorLoadingAndSavingUtils::SaveDirtyPackagesWithDialog(true, true);
@@ -176,11 +202,13 @@ bool UAtkAssetCreatorFunctionLibrary::SaveModifiedAssets(bool bPrompt, FString& 
 	{
 		result = UEditorLoadingAndSavingUtils::SaveDirtyPackages(true, true);
 	}
+    #endif
 	return result;
 }
 
 UBlueprint* UAtkAssetCreatorFunctionLibrary::CreateBlueprintDerivedFromClass(const FString& PackagePath, UClass* Class,const FString& AssetName)
 {
+    #if WITH_EDITOR
 	// Ensure the asset name is unique
 	FString OutPackageName = AssetName;
 	FString UniqueAssetName = AssetName;
@@ -212,5 +240,7 @@ UBlueprint* UAtkAssetCreatorFunctionLibrary::CreateBlueprintDerivedFromClass(con
 	}
 
 	return NewBlueprint;
+    #else
+    return nullptr;
+    #endif
 }
-#endif

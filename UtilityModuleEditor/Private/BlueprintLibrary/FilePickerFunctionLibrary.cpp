@@ -1,13 +1,14 @@
 // Copyright 2024 An@stacioDev All rights reserved.
-#if WITH_EDITOR
 #include "BlueprintLibrary/FilePickerFunctionLibrary.h"
-
+#if WITH_EDITOR
 #include "HAL/PlatformFileManager.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+#endif
 
 void UAtkFilePickerFunctionLibrary::OpenFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& FileTypes, TArray<FString>& OutFileNames)
 {
+    #if WITH_EDITOR
 	if (GEditor)
 	{
 		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindBestParentWindowForDialogs(nullptr);
@@ -34,6 +35,7 @@ void UAtkFilePickerFunctionLibrary::OpenFileDialog(const FString& DialogTitle, c
 			);
 		}
 	}
+    #endif
 }
 
 void UAtkFilePickerFunctionLibrary::OpenFileDialogJson(const FString& DefaultPath, TArray<FString>& OutFileNames)
@@ -43,6 +45,7 @@ void UAtkFilePickerFunctionLibrary::OpenFileDialogJson(const FString& DefaultPat
 
 void UAtkFilePickerFunctionLibrary::OpenDirectoryDialog(const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName)
 {
+    #if WITH_EDITOR
 	if (GEditor)
 	{
 		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindBestParentWindowForDialogs(nullptr);
@@ -66,5 +69,5 @@ void UAtkFilePickerFunctionLibrary::OpenDirectoryDialog(const FString& DialogTit
 			);
 		}
 	}
+    #endif
 }
-#endif

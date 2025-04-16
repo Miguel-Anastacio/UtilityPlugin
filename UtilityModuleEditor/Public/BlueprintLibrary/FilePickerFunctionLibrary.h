@@ -10,7 +10,6 @@ class UTILITYMODULEEDITOR_API UAtkFilePickerFunctionLibrary : public UBlueprintF
 {
     GENERATED_BODY()
 	
-#if WITH_EDITOR
 public:
 	/*
 	 * Opens a file dialog for the specified data. Leave FileTypes empty to be able to select any files.
@@ -26,7 +25,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "FilePicker")
 	static void OpenDirectoryDialog(const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
-#endif
-	
 };
 
