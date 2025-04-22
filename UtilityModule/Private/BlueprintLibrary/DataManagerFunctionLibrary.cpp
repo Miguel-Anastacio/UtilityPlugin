@@ -7,7 +7,6 @@
 #include "Misc/FileHelper.h"
 #include "UtilityModule.h"
 #include "Engine/DataTable.h"
-#include "StructUtils/Public/InstancedStruct.h"
 void UAtkDataManagerFunctionLibrary::WriteStringToFile(const FString& FilePath, const FString& String, bool& bOutSuccess, FString& OutInfoMessage)
 {
 	if (!FFileHelper::SaveStringToFile(String, *FilePath))

@@ -19,7 +19,6 @@ public:
 		DelegateRemoved(nullptr),
 		DelegateSet(nullptr),
 		DelegateClear(nullptr)
-		// DelegateDataChange(nullptr)
 	{}
 	void SetDelegates(DelegateChange& AddDel, DelegateChange& RemoveDel,
 				DelegateArraySet& SetDel, DelegateArrayClear& ClearDel)
@@ -148,7 +147,7 @@ public:
 	{
 		return Array.Last();
 	}
-private:
+	
 	bool ValidIndex(int32 Index) const
 	{
 		return Index >= 0 && Index < Array.Num();

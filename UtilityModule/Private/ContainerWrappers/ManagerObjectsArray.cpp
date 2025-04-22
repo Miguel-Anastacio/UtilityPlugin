@@ -40,7 +40,7 @@ TArray<UObject*> UTkManagerObjectsArray::GetArray_BP() const
 void UTkManagerObjectsArray::SetArray_BP(const TArray<UObject*>& NewObjects)
 {
 	ArrayWrapper.Set(NewObjects);
-}
+} 	
 
 void UTkManagerObjectsArray::SetAt_BP(const int Index, UObject* Object)
 {

@@ -8,10 +8,10 @@
 
 // Test fixture for UAtkDataManagerFunctionLibrary
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDataManagerFlJsonTest, "AnastacioUtilityToolkit.UtilityModule.DataManagerFL.Json", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDataManagerFlDataTableTest, "AnastacioUtilityToolkit.UtilityModule.DataManagerFL.DataTable", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
 
 bool FDataManagerFlDataTableTest::RunTest(const FString& Parameters)
 {

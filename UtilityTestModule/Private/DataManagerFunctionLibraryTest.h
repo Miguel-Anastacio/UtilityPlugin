@@ -1,7 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
+#if UE_VERSION_NEWER_THAN(5, 5, 0)
+#include "StructUtils/InstancedStruct.h"
+#else
 #include "InstancedStruct.h"
+#endif
 #include "Engine/DataTable.h"
 #include "DataManagerFunctionLibraryTest.generated.h"
 // Helper struct for testing - must inherit from FTableRowBase for DataTable
@@ -17,16 +22,16 @@ struct FTestStruct : public FTableRowBase
 	int32 Value;
 
 	FTestStruct() : Name(""), Value(0) {}
-	FTestStruct(const FString& InName, int32 InValue) : Name(InName), Value(InValue) {}
-	
+	FTestStruct(const FString &InName, int32 InValue) : Name(InName), Value(InValue) {}
+
 	// Serialize to JSON
-	void SerializeToJson(const TSharedPtr<FJsonObject>& OutJsonObject) const
+	void SerializeToJson(const TSharedPtr<FJsonObject> &OutJsonObject) const
 	{
 		OutJsonObject->SetStringField(TEXT("Name"), Name);
 		OutJsonObject->SetStringField(TEXT("Value"), FString::FromInt(Value));
 	}
-    
-	bool operator==(const FTestStruct& Other) const
+
+	bool operator==(const FTestStruct &Other) const
 	{
 		return Name == Other.Name && Value == Other.Value;
 	}
@@ -38,20 +43,15 @@ class FAtkDataManagerTestBase
 public:
 	FString TestDir;
 	FString TestJsonPath;
-	UDataTable* TestDataTable;
+	UDataTable *TestDataTable;
 	FTestStruct TestStruct;
 	TArray<FTestStruct> TestArray;
 
-	FAtkDataManagerTestBase() :
-		 TestDir()
-		,TestJsonPath()
-		,TestDataTable(nullptr)
-		,TestStruct()
-		,TestArray()
+	FAtkDataManagerTestBase() : TestDir(), TestJsonPath(), TestDataTable(nullptr), TestStruct(), TestArray()
 	{
 		CommonSetup();
 	}
-	virtual  ~FAtkDataManagerTestBase()
+	virtual ~FAtkDataManagerTestBase()
 	{
 		CommonTeardown();
 	}
@@ -62,14 +62,14 @@ public:
 		TestDir = FPaths::Combine(FPaths::AutomationTransientDir(), TEXT("AtkDataManagerTest"));
 		IFileManager::Get().DeleteDirectory(*TestDir, false, true);
 		IFileManager::Get().MakeDirectory(*TestDir);
-        
+
 		TestJsonPath = FPaths::Combine(TestDir, TEXT("TestData.json"));
-        
+
 		// Create test data
 		TestDataTable = CreateMockDataTable();
 		TestStruct.Name = TEXT("TestName");
 		TestStruct.Value = 42;
-        
+
 		TestArray.Add(TestStruct);
 		TestArray.Add(FTestStruct{TEXT("AnotherTest"), 84});
 	}
@@ -81,29 +81,29 @@ public:
 	}
 
 	// Mock data table for testing
-	static UDataTable* CreateMockDataTable() 
+	static UDataTable *CreateMockDataTable()
 	{
-		UDataTable* NewTestDataTable = NewObject<UDataTable>();
+		UDataTable *NewTestDataTable = NewObject<UDataTable>();
 		NewTestDataTable->RowStruct = FTestStruct::StaticStruct();
-        
+
 		// Add test rows
 		FTestStruct Row1;
 		Row1.Name = TEXT("Test1");
 		Row1.Value = 100;
 		NewTestDataTable->AddRow(FName("Row1"), Row1);
-        
+
 		FTestStruct Row2;
 		Row2.Name = TEXT("Test2");
 		Row2.Value = 200;
 		NewTestDataTable->AddRow(FName("Row2"), Row2);
-        
+
 		return NewTestDataTable;
 	}
 
 	TArray<FInstancedStruct> CreateMockInstancedStructsArray() const
 	{
 		TArray<FInstancedStruct> StructArray;
-		for(const auto& InStruct : TestArray)
+		for (const auto &InStruct : TestArray)
 		{
 			StructArray.Emplace(FInstancedStruct::Make(InStruct));
 		}

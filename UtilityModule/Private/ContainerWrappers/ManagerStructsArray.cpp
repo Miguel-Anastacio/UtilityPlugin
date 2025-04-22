@@ -49,6 +49,9 @@ FInstancedStruct& UTkManagerStructsArray::At_BP(const int Index)
 
 void UTkManagerStructsArray::SetAt(const int Index, const FInstancedStruct& NewStruct)
 {
+	if(!ArrayWrapper.ValidIndex(Index))
+		return;
+
 	const FInstancedStruct Prev = *ArrayWrapper.At(Index);
 	if(ArrayWrapper.SetAt(Index, NewStruct))
 	{

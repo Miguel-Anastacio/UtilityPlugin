@@ -5,28 +5,32 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "JsonObjectConverter.h"
 #include "Engine/DataTable.h"
+#include "Misc/EngineVersionComparison.h"
+#if UE_VERSION_NEWER_THAN(5, 5, 0)
+#include "StructUtils/InstancedStruct.h"
+#else
 #include "InstancedStruct.h"
+#endif
 #include "DataManagerFunctionLibrary.generated.h"
 
 class FJsonObject;
 /**
  * Library for managing data functions, such as reading from data tables and writing to JSON files.
  */
-UCLASS(DisplayName="Data Manager Function Library")
+UCLASS(DisplayName = "Data Manager Function Library")
 class UTILITYMODULE_API UAtkDataManagerFunctionLibrary : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
-    
-    UFUNCTION(BlueprintCallable, BlueprintPure ,Category = "Data")
-    static TArray<FInstancedStruct> GetArrayOfInstancedStructs(const UDataTable* DataTable);
-    
-    UFUNCTION(BlueprintCallable, BlueprintPure ,Category = "Data")
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Data")
+    static TArray<FInstancedStruct> GetArrayOfInstancedStructs(const UDataTable *DataTable);
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Data")
     static TArray<FInstancedStruct> GetArrayOfInstancedStructsSoft(const TSoftObjectPtr<UDataTable> DataTable);
-    
-    template<class T>
-    static bool ReadDataTableToArray(const UDataTable* DataTable, TArray<T>& ArrayToUpdate)
+
+    template <class T>
+    static bool ReadDataTableToArray(const UDataTable *DataTable, TArray<T> &ArrayToUpdate)
     {
         if (!DataTable)
         {
@@ -37,8 +41,8 @@ public:
         return !ArrayToUpdate.IsEmpty();
     }
 
-    UFUNCTION(BlueprintCallable, Category=JsonUtils)
-    static void WriteInstancedStructArrayToJson(const FString& FilePath, const TArray<FInstancedStruct>& Array);
+    UFUNCTION(BlueprintCallable, Category = JsonUtils)
+    static void WriteInstancedStructArrayToJson(const FString &FilePath, const TArray<FInstancedStruct> &Array);
     /**
      * Writes a structure to a JSON file.
      *
@@ -47,8 +51,8 @@ public:
      * @param bOutSuccess Whether the operation was successful.
      * @param OutInfoMessage Information message about the operation.
      */
-    template<class T>
-    static void WriteStructToJsonFile(const FString& FilePath,const T& Structure, bool& bOutSuccess, FString& OutInfoMessage)
+    template <class T>
+    static void WriteStructToJsonFile(const FString &FilePath, const T &Structure, bool &bOutSuccess, FString &OutInfoMessage)
     {
         TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject(Structure);
         if (!JsonObject)
@@ -60,7 +64,7 @@ public:
         WriteJson(FilePath, JsonObject, bOutSuccess, OutInfoMessage);
     }
 
-     /**
+    /**
      * Writes an array to a JSON file.
      *
      * @param JsonFilePath The path to the JSON file.
@@ -68,8 +72,8 @@ public:
      * @param bOutSuccess Whether the operation was successful.
      * @param OutInfoMessage Information message about the operation.
      */
-    template<class T>
-    static void WriteArrayToJsonFile(const FString& JsonFilePath, const TArray<T>& Array, bool& bOutSuccess, FString& OutInfoMessage)
+    template <class T>
+    static void WriteArrayToJsonFile(const FString &JsonFilePath, const TArray<T> &Array, bool &bOutSuccess, FString &OutInfoMessage)
     {
         TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
         if (!JsonObject)
@@ -80,7 +84,7 @@ public:
         }
 
         TArray<TSharedPtr<FJsonValue>> JsonValues;
-        for (const auto& Value : Array)
+        for (const auto &Value : Array)
         {
             TSharedPtr<FJsonObject> StructObject = MakeShared<FJsonObject>();
             Value.SerializeToJson(StructObject);
@@ -89,14 +93,14 @@ public:
 
         WriteJson(JsonFilePath, JsonValues, bOutSuccess, OutInfoMessage);
     }
-    
-    template<class T>
-    static TArray<T> LoadCustomDataFromJson(const FString& FilePath)
+
+    template <class T>
+    static TArray<T> LoadCustomDataFromJson(const FString &FilePath)
     {
-        TArray<TSharedPtr<FJsonValue>> JsonArray = ReadJsonFileArray(FilePath); 
+        TArray<TSharedPtr<FJsonValue>> JsonArray = ReadJsonFileArray(FilePath);
         TArray<T> OutArray;
         int32 Index = 0;
-        for(const auto& JsonValue : JsonArray)
+        for (const auto &JsonValue : JsonArray)
         {
             if (JsonValue->Type == EJson::Object)
             {
@@ -119,13 +123,13 @@ public:
         }
         return OutArray;
     }
-    
-    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString& FilePath, const UScriptStruct* StructType);
-    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString& FilePath, const TArray<UScriptStruct*>& StructTypes);
-    
-    static bool DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject,const UScriptStruct* StructType, FInstancedStruct& OutInstancedStruct);
-    static TSharedPtr<FJsonObject> SerializeInstancedStructToJson(const FInstancedStruct& Instance);
-    
+
+    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const UScriptStruct *StructType);
+    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const TArray<UScriptStruct *> &StructTypes);
+
+    static bool DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct *StructType, FInstancedStruct &OutInstancedStruct);
+    static TSharedPtr<FJsonObject> SerializeInstancedStructToJson(const FInstancedStruct &Instance);
+
     /**
      * Writes a string to a file.
      *
@@ -134,9 +138,9 @@ public:
      * @param bOutSuccess Whether the operation was successful.
      * @param OutInfoMessage Information message about the operation.
      */
-    UFUNCTION(BlueprintCallable, Category=JsonUtils)
-    static void WriteStringToFile(const FString& FilePath, const FString& String, bool& bOutSuccess, FString& OutInfoMessage);
-    
+    UFUNCTION(BlueprintCallable, Category = JsonUtils)
+    static void WriteStringToFile(const FString &FilePath, const FString &String, bool &bOutSuccess, FString &OutInfoMessage);
+
 private:
     /**
      * Writes JSON data to a file.
@@ -146,8 +150,8 @@ private:
      * @param bOutSuccess Whether the operation was successful.
      * @param OutInfoMessage Information message about the operation.
      */
-    static void WriteJson(const FString& JsonFilePath, const TSharedPtr<FJsonObject> JsonObject, bool& bOutSuccess, FString& OutInfoMessage);
-    
+    static void WriteJson(const FString &JsonFilePath, const TSharedPtr<FJsonObject> JsonObject, bool &bOutSuccess, FString &OutInfoMessage);
+
     /**
      * Writes JSON data to a file.
      *
@@ -156,12 +160,11 @@ private:
      * @param bOutSuccess Whether the operation was successful.
      * @param OutInfoMessage Information message about the operation.
      */
-    static void WriteJson(const FString& JsonFilePath, const TArray<TSharedPtr<FJsonValue>>& JsonValueArray, bool& bOutSuccess, FString& OutInfoMessage);
+    static void WriteJson(const FString &JsonFilePath, const TArray<TSharedPtr<FJsonValue>> &JsonValueArray, bool &bOutSuccess, FString &OutInfoMessage);
 
-    static TSharedPtr<FJsonObject> ReadJsonFile(const FString& FilePath);
-    static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArray(const FString& FilePath);
-    static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArrayFromString(const FString& JsonString);
-    static bool ObjectHasMissingFields(const TSharedPtr<FJsonObject>& Object, int Index, const FString& FilePath, const UStruct* StructType);
-    static void LogReadJsonFailed(const FString& FilePath);
+    static TSharedPtr<FJsonObject> ReadJsonFile(const FString &FilePath);
+    static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArray(const FString &FilePath);
+    static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArrayFromString(const FString &JsonString);
+    static bool ObjectHasMissingFields(const TSharedPtr<FJsonObject> &Object, int Index, const FString &FilePath, const UStruct *StructType);
+    static void LogReadJsonFailed(const FString &FilePath);
 };
-
