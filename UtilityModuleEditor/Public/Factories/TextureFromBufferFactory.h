@@ -1,3 +1,4 @@
+// Copyright 2024 An@stacioDev All rights reserved.
 #pragma once
 #if WITH_EDITOR
 #include "CoreMinimal.h"

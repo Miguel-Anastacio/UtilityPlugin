@@ -1,3 +1,4 @@
+// Copyright 2024 An@stacioDev All rights reserved.
 #if WITH_EDITOR
 #include "Factories/TextureFromBufferFactory.h"
 UTexture2DFromBufferFactory::UTexture2DFromBufferFactory(const FObjectInitializer& ObjectInitializer)
