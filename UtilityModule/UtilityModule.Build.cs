@@ -55,6 +55,7 @@ public class UtilityModule : ModuleRules
 				"Slate",	
 				"SlateCore",
 				"UMG",
+				"StructUtils"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
