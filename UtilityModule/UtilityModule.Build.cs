@@ -54,8 +54,7 @@ public class UtilityModule : ModuleRules
 				"JsonUtilities",
 				"Slate",	
 				"SlateCore",
-				"UMG",
-				"StructUtils"
+				"UMG"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

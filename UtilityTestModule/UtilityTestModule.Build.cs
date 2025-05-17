@@ -26,8 +26,7 @@ public class UtilityTestModule : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
-				"StructUtils"
+				"Core"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
