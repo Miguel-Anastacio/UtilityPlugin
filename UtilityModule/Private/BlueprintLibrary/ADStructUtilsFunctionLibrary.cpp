@@ -174,6 +174,19 @@ TArray<const FProperty*> UAtkStructUtilsFunctionLibrary::GetOrderedProperties(co
 	TArray<const FProperty*> OrderedProperties;
 	OrderedProperties.Append(ParentProperties);
 	OrderedProperties.Append(ChildProperties);
+
+	// Put ID property at the beggining
+	for (int32 i = 0; i < OrderedProperties.Num(); ++i)
+	{
+		const FProperty* IDProp = ParentProperties[i];
+		const FString StaticPropertyName = IDProp->GetName();
+		if (StaticPropertyName.Contains(FString("ID")))
+		{
+			OrderedProperties.RemoveAt(i);
+			OrderedProperties.Insert(IDProp, 0);
+			break;
+		}
+	}
 	return OrderedProperties;
 }
 

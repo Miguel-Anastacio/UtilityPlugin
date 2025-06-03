@@ -44,7 +44,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = JsonUtils)
     static void WriteInstancedStructArrayToJson(const FString &FilePath, const TArray<FInstancedStruct> &Array);
     /**
-     * Writes a structure to a JSON file.
+     * @brief Writes a structure to a JSON file.
      *
      * @param FilePath The path to the JSON file.
      * @param Structure The structure to write.
@@ -65,7 +65,7 @@ public:
     }
 
     /**
-     * Writes an array to a JSON file.
+     * @brief Writes an array to a JSON file.
      *
      * @param JsonFilePath The path to the JSON file.
      * @param Array The array to write.
@@ -131,7 +131,7 @@ public:
     static TSharedPtr<FJsonObject> SerializeInstancedStructToJson(const FInstancedStruct &Instance);
 
     /**
-     * Writes a string to a file.
+     * @brief Writes a string to a file.
      *
      * @param FilePath The path to the file.
      * @param String The string to write.
@@ -143,7 +143,7 @@ public:
 
 private:
     /**
-     * Writes JSON data to a file.
+     * @brief Writes JSON data to a file.
      *
      * @param JsonFilePath The path to the JSON file.
      * @param JsonObject The JSON object to write.
@@ -153,7 +153,7 @@ private:
     static void WriteJson(const FString &JsonFilePath, const TSharedPtr<FJsonObject> JsonObject, bool &bOutSuccess, FString &OutInfoMessage);
 
     /**
-     * Writes JSON data to a file.
+     * @brief Writes JSON data to a file.
      *
      * @param JsonFilePath The path to the JSON file.
      * @param JsonValueArray The array of JSON values to write.

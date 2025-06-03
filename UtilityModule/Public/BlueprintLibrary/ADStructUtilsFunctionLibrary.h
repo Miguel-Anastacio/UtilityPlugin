@@ -203,6 +203,16 @@ public:
         return GetPropertyValueAsString(Property, Data);
     }
 
+    template <typename T>
+    static bool StructHasPropertyOfTypeWithName(const UScriptStruct* StructType, const FName& Name)
+    {
+        if (const FProperty *Property = FindPropertyByDisplayName(StructType, FName(Name)))
+        {
+            return IsTypeCompatible<T>(Property);
+        }
+        return false;
+    }
+
 private:
     struct FStructProp
     {

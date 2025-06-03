@@ -128,7 +128,8 @@ public:
         for (TFieldIterator<FProperty> It(Item->GetScriptStruct()); It; ++It)
         {
             const FProperty *Property = *It;
-            const FName PropertyName = Property->GetFName();
+            const FText PropertyNameText = Property->GetDisplayNameText();
+            const FName PropertyName(PropertyNameText.ToString());
             if (ColumnName == PropertyName)
             {
                 return DisplayEditableProperty(Property);
@@ -156,8 +157,8 @@ public:
     {
     }
     SLATE_DEFAULT_SLOT(FArguments, Content)
-    SLATE_ARGUMENT(const TArray<TSharedPtr<FInstancedStruct>> *, ListSource)
-    SLATE_ARGUMENT(const TArray<UScriptStruct *> *, StructTypes)
+    SLATE_ARGUMENT(TArray<TSharedPtr<FInstancedStruct>> *, ListSource)
+    SLATE_ARGUMENT(TArray<UScriptStruct *> *, StructTypes)
     SLATE_ARGUMENT(float, ItemHeight)
     // called when a struct is edited by the user
     SLATE_EVENT(FItemChangedSignature, OnItemChanged)
@@ -172,7 +173,7 @@ public:
     {
         if (InArgs._ListSource != nullptr)
         {
-            List = *(InArgs._ListSource);
+            List = (InArgs._ListSource);
         }
         ItemUpdateDelegate = InArgs._OnItemChanged;
 
@@ -186,10 +187,11 @@ public:
                 TArray<const FProperty *> OrderedProperties = UAtkStructUtilsFunctionLibrary::GetOrderedProperties(Struct);
                 for (const FProperty *Property : OrderedProperties)
                 {
-                    const FName PropertyName = Property->GetFName();
+                    const FText PropertyNameText = Property->GetDisplayNameText();
+                    const FName PropertyName(PropertyNameText.ToString());
                     if (!HeaderRow->IsColumnVisible(PropertyName))
                     {
-                        HeaderRow->AddColumn(SHeaderRow::Column(PropertyName).DefaultLabel(FText::FromName(PropertyName)));
+                        HeaderRow->AddColumn(SHeaderRow::Column(PropertyName).DefaultLabel(PropertyNameText));
                     }
                 }
             }
@@ -197,7 +199,7 @@ public:
 
         ListView = SNew(SListView<TSharedPtr<FInstancedStruct>>)
                        .ItemHeight(20.0f)
-                       .ListItemsSource(&List)
+                       .ListItemsSource(List)
                        .OnGenerateRow(this, &SInstancedStructList::OnGenerateRow)
                        .OnSelectionChanged(this, &SInstancedStructList::HandleSelectionChanged)
                        .OnMouseButtonDoubleClick(this, &SInstancedStructList::HandleMouseButtonDoubleClick)
@@ -226,19 +228,28 @@ public:
         // NO OP
         return SNullWidget::NullWidget;
     }
+    virtual void RefreshList()
+    {
+        if (ListView != nullptr)
+        {
+            ListView->RequestListRefresh();
+        }
+    }
 
     virtual void SetSelection(int Index)
     {
-        if (Index < 0 || Index >= List.Num())
+        if (Index < 0 || Index >= List->Num())
             return;
         if (ensure(ListView.IsValid()))
         {
-            ListView->SetSelection(List[Index], ESelectInfo::Type::Direct);
+            TArray<TSharedPtr<FInstancedStruct>> Array = *List;
+            ListView->SetSelection(Array[Index], ESelectInfo::Type::Direct);
+            ListView->RequestScrollIntoView(Array[Index]);
         }
     }
 
 protected:
-    TArray<TSharedPtr<FInstancedStruct>> List;
+    TArray<TSharedPtr<FInstancedStruct>>* List;
     TSharedPtr<SListView<TSharedPtr<FInstancedStruct>>> ListView;
     TSharedPtr<SHeaderRow> HeaderRow;
     FItemChangedSignature ItemUpdateDelegate;

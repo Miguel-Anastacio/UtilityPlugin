@@ -6,6 +6,7 @@
 #include "Serialization/JsonWriter.h"
 #include "Misc/FileHelper.h"
 #include "UtilityModule.h"
+#include "BlueprintLibrary/ADStructUtilsFunctionLibrary.h"
 #include "Engine/DataTable.h"
 void UAtkDataManagerFunctionLibrary::WriteStringToFile(const FString& FilePath, const FString& String, bool& bOutSuccess, FString& OutInfoMessage)
 {
@@ -166,7 +167,7 @@ void UAtkDataManagerFunctionLibrary::WriteInstancedStructArrayToJson(const FStri
 
 	bool bResult = false;
 	FString OutInfoMessage;
-	WriteJson(FilePath, JsonValueArray, bResult, OutInfoMessage);
+	WriteJson(FilePath, JsonValueArray, bResult, OutInfoMessage);	
 	if(!bResult)
 	{
 		UE_LOG(LogUtilityModule, Error, TEXT("Failed to Save Instanced Struct Array: %s"), *OutInfoMessage);
@@ -201,7 +202,7 @@ TSharedPtr<FJsonObject> UAtkDataManagerFunctionLibrary::SerializeInstancedStruct
 void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, const TSharedPtr<FJsonObject> JsonObject, bool& bOutSuccess, FString& OutInfoMessage)
 {
 	FString JSONString;
-
+	
 	if (!FJsonSerializer::Serialize(JsonObject.ToSharedRef(), TJsonWriterFactory<>::Create(&JSONString, 0)))
 	{
 		bOutSuccess = false;
@@ -222,7 +223,9 @@ void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, cons
 void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, const TArray<TSharedPtr<FJsonValue>>& JsonValueArray, bool& bOutSuccess, FString& OutInfoMessage)
 {
 	FString JSONString;
-
+	UE_LOG(LogTemp, Warning, TEXT("Map Num: %d"), JsonValueArray.Num());
+	
+	// Crashes in 5.5 -> TODO: investigate
 	if (!FJsonSerializer::Serialize(JsonValueArray, TJsonWriterFactory<>::Create(&JSONString, 0)))
 	{
 		bOutSuccess = false;
@@ -251,9 +254,9 @@ bool UAtkDataManagerFunctionLibrary::ObjectHasMissingFields(const TSharedPtr<FJs
 		// Check if the JSON object contains the field
 		if (!Object->HasField(PropertyName))
 		{
-			UE_LOG(LogUtilityModule, Warning, 
-				TEXT("Missing field '%s' in JSON object at index %d in file '%s'"), 
-				*PropertyName, Index, *FilePath);
+			// UE_LOG(LogUtilityModule, Warning, 
+			// 	TEXT("Missing field '%s' in JSON object at index %d in file '%s'"), 
+			// 	*PropertyName, Index, *FilePath);
 			bResult = true;
 		}
 	}

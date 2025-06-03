@@ -50,7 +50,7 @@ public:
 	 * @return Created texture or nullptr on failure.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AssetCreator")
-	static UTexture2D* CreateTextureAssetFromBuffer(const FString& AssetPath, TArray<uint8>& Data, int Width, int Height,
+	static UTexture2D* CreateTextureAssetFromBuffer(const FString& PackagePath, const FString& AssetBaseName, TArray<uint8>& Data, int Width, int Height,
 													bool& bOutSuccess, FString& OutInfoMessage);
 
 	/*
@@ -63,7 +63,7 @@ public:
 	 * @param OutInfoMessage - Info or error message.
 	 * @return Created texture or nullptr.
 	 */
-	static UTexture2D* CreateTextureAssetFromBuffer(const FString& AssetPath, uint8* Data, uint32 Width, uint32 Height,
+	static UTexture2D* CreateTextureAssetFromBuffer(const FString& PackagePath, const FString& AssetBaseName, uint8* Data, uint32 Width, uint32 Height,
 													bool& bOutSuccess, FString& OutInfoMessage);
 
 	/*
@@ -73,7 +73,7 @@ public:
 	 * @param AssetClass - Class of the asset.
 	 * @return A unique asset name that doesn't conflict with existing assets.
 	 */
-	static FString CreateUniqueAssetNameInPackage(const FString& PackagePath, const FString& BaseAssetName, UClass* AssetClass);
+	static FString CreateUniqueAssetNameInPackage(const FString& PackagePath, const FString& BaseAssetName);
 
 	/*
 	 * Creates a Blueprint asset derived from a specified class.

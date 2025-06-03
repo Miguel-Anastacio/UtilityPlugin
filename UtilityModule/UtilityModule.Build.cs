@@ -54,10 +54,15 @@ public class UtilityModule : ModuleRules
 				"JsonUtilities",
 				"Slate",	
 				"SlateCore",
-				"UMG"
+				"UMG",
+				"StructUtils"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
+		if (Target.Version.MajorVersion <= 5 && Target.Version.MinorVersion <= 4)
+		{
+			PublicDependencyModuleNames.Add("StructUtils");
+		}
 		
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]

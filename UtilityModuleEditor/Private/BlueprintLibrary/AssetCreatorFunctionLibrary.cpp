@@ -86,7 +86,7 @@ UObject *UAtkAssetCreatorFunctionLibrary::CreateAsset(const FString &AssetPath, 
 #endif
 }
 
-UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString &AssetPath, TArray<uint8> &Data,
+UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString& PackagePath, const FString& AssetBaseName, TArray<uint8> &Data,
 																		  int Width, int Height, bool &bOutSuccess, FString &OutInfoMessage)
 {
 #if WITH_EDITOR
@@ -98,13 +98,13 @@ UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const 
 	}
 
 	uint8 *Buffer = Data.GetData();
-	return CreateTextureAssetFromBuffer(AssetPath, Buffer, Width, Height, bOutSuccess, OutInfoMessage);
+	return CreateTextureAssetFromBuffer(PackagePath, AssetBaseName, Buffer, Width, Height, bOutSuccess, OutInfoMessage);
 #else
 	return nullptr;
 #endif
 }
 
-UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString &AssetPath, uint8 *Data,
+UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const FString& PackagePath, const FString& AssetBaseName, uint8 *Data,
 																		  uint32 Width, uint32 Height, bool &bOutSuccess, FString &OutInfoMessage)
 {
 #if WITH_EDITOR
@@ -119,18 +119,22 @@ UTexture2D *UAtkAssetCreatorFunctionLibrary::CreateTextureAssetFromBuffer(const 
 	Factory->Width = Width;
 	Factory->Buffer = Data;
 
-	return Cast<UTexture2D>(CreateAsset(AssetPath, UTexture2D::StaticClass(), Factory, bOutSuccess, OutInfoMessage));
+	return Cast<UTexture2D>(CreateAssetInPackageWithUniqueName(PackagePath, UTexture2D::StaticClass(), AssetBaseName, Factory));
 #else
 	return nullptr;
 #endif
 }
 
-FString UAtkAssetCreatorFunctionLibrary::CreateUniqueAssetNameInPackage(const FString &PackagePath, const FString &BaseAssetName, UClass *AssetClass)
+FString UAtkAssetCreatorFunctionLibrary::CreateUniqueAssetNameInPackage(const FString &PackagePath, const FString &BaseAssetName)
 {
-// Create a package to hold the new asset
 #if WITH_EDITOR
-	UPackage *Package = CreatePackage(*PackagePath);
-	return MakeUniqueObjectName(Package, AssetClass, FName(*BaseAssetName)).ToString();
+	// Ensure the asset name is unique
+	FString OutPackageName = BaseAssetName;
+	FString UniqueAssetName = BaseAssetName;
+	FAssetToolsModule &AssetToolsModule = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools");
+	AssetToolsModule.Get().CreateUniqueAssetName(PackagePath + BaseAssetName, TEXT(""), OutPackageName, UniqueAssetName);
+	UPackage *Package = CreatePackage(*OutPackageName);
+	return  UniqueAssetName;
 #else
 	return FString();
 #endif
