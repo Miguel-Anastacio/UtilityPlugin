@@ -25,6 +25,8 @@ void UAtkMiscFunctionLibrary::ExecuteSlowTaskWithProgressBar(TFunction<void(TFun
 		// 		FText::FromString(FString(message.data()))    // Second parameter: Convert std::string_view
 		// 	)
 		// );
+
+		UE_LOG(LogTemp, Warning, TEXT("Message: %s"), *FString(message.data()));
 	};
 
 	// execute slow task and pass progress callback
