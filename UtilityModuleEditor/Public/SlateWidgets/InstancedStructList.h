@@ -238,13 +238,26 @@ public:
 
     virtual void SetSelection(int Index)
     {
-        if (Index < 0 || Index >= List->Num())
+        if (Index < 0)
             return;
-        if (ensure(ListView.IsValid()))
+        // used only for map plugin maybe adapt
+        int listIndex = 0;
+        for(const TSharedPtr<FInstancedStruct> Item : *List)
+        {
+            bool bResult = false;
+            if(UAtkStructUtilsFunctionLibrary::GetPropertyValueFromStruct<int>(*Item.Get(), FString("ID"), bResult) == Index)
+            {
+                break;
+            }
+            listIndex++;
+        }
+
+        
+        if (ensure(ListView.IsValid()) && listIndex < List->Num())
         {
             TArray<TSharedPtr<FInstancedStruct>> Array = *List;
-            ListView->SetSelection(Array[Index], ESelectInfo::Type::Direct);
-            ListView->RequestScrollIntoView(Array[Index]);
+            ListView->SetSelection(Array[listIndex], ESelectInfo::Type::Direct);
+            ListView->RequestScrollIntoView(Array[listIndex]);
         }
     }
 
