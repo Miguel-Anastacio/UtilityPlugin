@@ -236,6 +236,14 @@ public:
         }
     }
 
+    virtual void ClearSelection()
+    {
+        if (ListView != nullptr)
+        {
+            ListView->ClearSelection();
+        }
+    }
+
     virtual void SetSelection(int Index)
     {
         if (Index < 0)
