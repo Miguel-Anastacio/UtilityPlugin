@@ -125,11 +125,10 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 }
 
 TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(const FString& FilePath,
-                                                                             const TArray<UScriptStruct*>& StructTypes)
+                                                                             const TArray<const UScriptStruct*>& StructTypes)
 {
 	TArray<TSharedPtr<FJsonValue>> JsonArray = ReadJsonFileArray(FilePath); 
 	TArray<FInstancedStruct> OutArray;
-	int32 Index = 0;
 	for(const auto& JsonValue : JsonArray)
 	{
 		TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
@@ -144,10 +143,9 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 		for(const auto& StructType : StructTypes)
 		{
 			const bool bResult = DeserializeJsonToFInstancedStruct(JsonObject, StructType, NewInstancedStruct);
-			if (bResult && !ObjectHasMissingFields(JsonObject, Index, FilePath, StructType))
+			if (bResult && !ObjectHasMissingFields(JsonObject, StructType))
 			{
 				OutArray.Add(MoveTemp(NewInstancedStruct));
-				Index++;
 				break;
 			}
 		}
@@ -176,6 +174,8 @@ void UAtkDataManagerFunctionLibrary::WriteInstancedStructArrayToJson(const FStri
 
 bool UAtkDataManagerFunctionLibrary::DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct* StructType, FInstancedStruct& OutInstancedStruct)
 {
+	if(!StructType)
+		return false;
 	// Initialize the FInstancedStruct with the resolved type
 	OutInstancedStruct.InitializeAs(StructType);
 
@@ -243,7 +243,7 @@ void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, cons
 	OutInfoMessage = FString::Printf(TEXT("Write json succeeded = '%s"), *JsonFilePath);
 }
 
-bool UAtkDataManagerFunctionLibrary::ObjectHasMissingFields(const TSharedPtr<FJsonObject>& Object, int Index, const FString& FilePath, const UStruct* StructType)
+bool UAtkDataManagerFunctionLibrary::ObjectHasMissingFields(const TSharedPtr<FJsonObject>& Object, const UStruct* StructType)
 {
 	bool bResult = false;
 	for (TFieldIterator<FProperty> It(StructType); It; ++It)

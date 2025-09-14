@@ -108,7 +108,7 @@ public:
                 TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
                 if (FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), T::StaticStruct(), &StructInstance, 0, 0, true))
                 {
-                    ObjectHasMissingFields(JsonObject, Index, FilePath, T::StaticStruct());
+                    ObjectHasMissingFields(JsonObject, T::StaticStruct());
                     OutArray.Emplace(StructInstance);
                 }
                 else
@@ -125,7 +125,7 @@ public:
     }
 
     static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const UScriptStruct *StructType);
-    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const TArray<UScriptStruct *> &StructTypes);
+    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const TArray<const UScriptStruct *> &StructTypes);
 
     static bool DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct *StructType, FInstancedStruct &OutInstancedStruct);
     static TSharedPtr<FJsonObject> SerializeInstancedStructToJson(const FInstancedStruct &Instance);
@@ -165,6 +165,6 @@ private:
     static TSharedPtr<FJsonObject> ReadJsonFile(const FString &FilePath);
     static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArray(const FString &FilePath);
     static TArray<TSharedPtr<FJsonValue>> ReadJsonFileArrayFromString(const FString &JsonString);
-    static bool ObjectHasMissingFields(const TSharedPtr<FJsonObject> &Object, int Index, const FString &FilePath, const UStruct *StructType);
+    static bool ObjectHasMissingFields(const TSharedPtr<FJsonObject> &Object, const UStruct *StructType);
     static void LogReadJsonFailed(const FString &FilePath);
 };

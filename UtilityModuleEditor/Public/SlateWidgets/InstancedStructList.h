@@ -204,7 +204,7 @@ public:
                        .OnSelectionChanged(this, &SInstancedStructList::HandleSelectionChanged)
                        .OnMouseButtonDoubleClick(this, &SInstancedStructList::HandleMouseButtonDoubleClick)
                        .OnContextMenuOpening(this, &SInstancedStructList::HandleContextMenuOpening)
-                       .SelectionMode(ESelectionMode::Single)
+                       .SelectionMode(ESelectionMode::Multi)
                        .HeaderRow(HeaderRow);
 
         // construct the list view
@@ -244,28 +244,28 @@ public:
         }
     }
 
-    virtual void SetSelection(int Index)
+    virtual void SetSelection(const TArray<int32>& Indexes)
     {
-        if (Index < 0)
-            return;
         // used only for map plugin maybe adapt
-        int listIndex = 0;
-        for(const TSharedPtr<FInstancedStruct> Item : *List)
+        TArray<TSharedPtr<FInstancedStruct>> ItemsSelected;
+        for(const int32 Index : Indexes)
         {
-            bool bResult = false;
-            if(UAtkStructUtilsFunctionLibrary::GetPropertyValueFromStruct<int>(*Item.Get(), FString("ID"), bResult) == Index)
+            for(const TSharedPtr<FInstancedStruct> Item : *List)
             {
-                break;
+                bool bResult = false;
+                if(UAtkStructUtilsFunctionLibrary::GetPropertyValueFromStruct<int>(*Item.Get(), FString("ID"), bResult) == Index)
+                {
+                    ItemsSelected.Add(Item);
+                    break;
+                }
             }
-            listIndex++;
         }
-
         
-        if (ensure(ListView.IsValid()) && listIndex < List->Num())
+        ListView->ClearSelection();
+        if (ensure(ListView.IsValid()) && ItemsSelected.Num() > 0)
         {
-            TArray<TSharedPtr<FInstancedStruct>> Array = *List;
-            ListView->SetSelection(Array[listIndex], ESelectInfo::Type::Direct);
-            ListView->RequestScrollIntoView(Array[listIndex]);
+            ListView->SetItemSelection(ItemsSelected, true, ESelectInfo::Type::Direct);
+            ListView->RequestScrollIntoView(ItemsSelected.Last());
         }
     }
 
