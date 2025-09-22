@@ -7,22 +7,22 @@ public class UtilityModule : ModuleRules
 	public UtilityModule(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
             }
 			);
-				
-		
+
+
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
 			
             }
 			);
-			
-		
+
+
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -32,7 +32,7 @@ public class UtilityModule : ModuleRules
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
-			
+
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.AddRange(
@@ -43,7 +43,7 @@ public class UtilityModule : ModuleRules
 				}
 			);
 		}
-		
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -52,10 +52,9 @@ public class UtilityModule : ModuleRules
 				"InputCore",
 				"Json",
 				"JsonUtilities",
-				"Slate",	
+				"Slate",
 				"SlateCore",
 				"UMG",
-				"StructUtils"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
@@ -63,7 +62,7 @@ public class UtilityModule : ModuleRules
 		{
 			PublicDependencyModuleNames.Add("StructUtils");
 		}
-		
+
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
