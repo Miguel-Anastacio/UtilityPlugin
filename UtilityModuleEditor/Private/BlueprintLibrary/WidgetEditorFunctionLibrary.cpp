@@ -1,6 +1,5 @@
 // Copyright 2024 An@stacioDev All rights reserved.
 #include "BlueprintLibrary/WidgetEditorFunctionLibrary.h"
-
 #include "UtilityModuleEditor.h"
 #if WITH_EDITOR
 #include "WidgetBlueprint.h"
@@ -59,12 +58,15 @@ void UAtkWidgetEditorFunctionLibrary::RegisterNewlyCreatedWidgets(const TArray<U
 {
 	for(const UWidget* NewWidget : NewlyCreatedWidgets)
 	{
+		#if UE_VERSION_NEWER_THAN(5, 6, 0)
 		if(NewWidget && !WidgetBP->WidgetVariableNameToGuidMap.Contains(NewWidget->GetFName()))
 		{
 			FGuid NewGuid = FGuid::NewGuid();
+			
 			WidgetBP->WidgetVariableNameToGuidMap.Add(NewWidget->GetFName(), NewGuid);
 			UE_LOG(LogUtilityModuleEditor, Log, TEXT("Added GUID for widget: %s = %s"), *NewWidget->GetFName().ToString(), *NewGuid.ToString());
 		}
+		#endif
 	}
 }
 

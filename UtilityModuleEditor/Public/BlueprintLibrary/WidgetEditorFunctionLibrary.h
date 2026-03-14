@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "WidgetBlueprint.h"
 #include "Blueprint/WidgetTree.h"
+#include "Misc/EngineVersionComparison.h"
 #include "WidgetEditorFunctionLibrary.generated.h"
 
 /**
@@ -41,9 +42,10 @@ public:
 			if(Child)
 			{
 				FName WidgetName = Child->GetFName();
+				#if UE_VERSION_NEWER_THAN(5, 6, 0)
 				WidgetBP->WidgetVariableNameToGuidMap.Remove(WidgetName);
 				// UE_LOG(LogUtilityModuleEditor, Log, TEXT("Removing GUID for: %s"), *WidgetName.ToString());
-
+				#endif
 				// IMPORTANT: Actually garbage collect the old widgets
 				Child->Rename(nullptr, GetTransientPackage(), REN_DontCreateRedirectors | REN_ForceNoResetLoaders);
 				Child->MarkAsGarbage();
@@ -77,9 +79,10 @@ public:
 			if (NewRootWidget)
 			{
 				// Generate and register a GUID for the root widget
+				#if UE_VERSION_NEWER_THAN(5, 6, 0)
 				FGuid NewGuid = FGuid::NewGuid();
 				WidgetBP->WidgetVariableNameToGuidMap.Add(NewRootWidget->GetFName(), NewGuid);
-          
+				#endif
 				// Set as root widget
 				MainAssetWidgetTree->RootWidget = NewRootWidget;
 				return true;
