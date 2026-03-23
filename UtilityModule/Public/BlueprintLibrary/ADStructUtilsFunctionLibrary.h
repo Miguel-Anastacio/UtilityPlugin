@@ -100,6 +100,18 @@ public:
 
     static FString GetPropertyValueAsString(const FProperty *Property, const void *StructObject, bool &OutResult);
     static FString GetPropertyValueAsString(const FProperty *Property, const void *Data);
+    
+    template <typename T>
+    static T GetStructAsType(const FInstancedStruct &InstancedStruct)
+    {
+        return CastChecked<T>(InstancedStruct.GetMemory());
+    }
+    
+    template <typename T>
+    static T* GetStructAsTypeMutable(FInstancedStruct &InstancedStruct)
+    {
+        return CastChecked<T>(InstancedStruct.GetMutableMemory());
+    }
 
     // Iterates through all properties of a struct, pass function to perform for each property
     template <typename FuncType>
