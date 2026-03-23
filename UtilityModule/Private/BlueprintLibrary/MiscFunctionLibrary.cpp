@@ -26,7 +26,7 @@ void UAtkMiscFunctionLibrary::ExecuteSlowTaskWithProgressBar(TFunction<void(TFun
 		// 	)
 		// );
 
-		UE_LOG(LogTemp, Warning, TEXT("Message: %s"), *FString(message.data()));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Message: %s"), *FString(message.data()));
 	};
 
 	// execute slow task and pass progress callback

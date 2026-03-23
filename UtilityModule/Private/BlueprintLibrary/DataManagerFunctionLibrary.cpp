@@ -107,7 +107,7 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 		TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
 		if (!JsonObject.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Invalid JSON object in array."));
+			UE_LOG(LogUtilityModule, Error, TEXT("Invalid JSON object in array."));
 			continue;
 		}
 
@@ -224,7 +224,6 @@ void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, cons
 void UAtkDataManagerFunctionLibrary::WriteJson(const FString& JsonFilePath, const TArray<TSharedPtr<FJsonValue>>& JsonValueArray, bool& bOutSuccess, FString& OutInfoMessage)
 {
 	FString JSONString;
-	UE_LOG(LogTemp, Warning, TEXT("Map Num: %d"), JsonValueArray.Num());
 	
 	if (!FJsonSerializer::Serialize(JsonValueArray, TJsonWriterFactory<>::Create(&JSONString, 0)))
 	{
