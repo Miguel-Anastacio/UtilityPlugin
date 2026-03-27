@@ -168,7 +168,7 @@ public:
     }
     SLATE_DEFAULT_SLOT(FArguments, Content)
     SLATE_ARGUMENT(TArray<TSharedPtr<FInstancedStruct>> *, ListSource)
-    SLATE_ARGUMENT(TArray<UScriptStruct *> *, StructTypes)
+    SLATE_ARGUMENT(TArray<const UScriptStruct *> *, StructTypes)
     SLATE_ARGUMENT(float, ItemHeight)
     // called when a struct is edited by the user
     SLATE_EVENT(FItemChangedSignature, OnItemChanged)
@@ -253,7 +253,7 @@ public:
         }
     }
     
-    virtual void RebuildColumns(const TArray<UScriptStruct *>& StructTypes)
+    virtual void RebuildColumns(const TArray<const UScriptStruct *>& StructTypes)
     {
         if (!HeaderRow.IsValid())
             return;
@@ -310,7 +310,7 @@ public:
     }
 
 protected:
-    virtual void BuildColumns(const TArray<UScriptStruct *>& StructTypes)
+    virtual void BuildColumns(const TArray<const UScriptStruct *>& StructTypes)
     {
         for (const auto &Struct : StructTypes)
         {
