@@ -14,6 +14,13 @@
 #include "DataManagerFunctionLibrary.generated.h"
 
 class FJsonObject;
+enum class EResultJsonLoad : uint8
+{
+    Failed,
+    Partial,
+    Success
+};
+
 /**
  * Library for managing data functions, such as reading from data tables and writing to JSON files.
  */
@@ -132,10 +139,9 @@ public:
         return OutArray;
     }
 
-    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const UScriptStruct *StructType);
-    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const TArray<const UScriptStruct *> &StructTypes);
+    static TArray<FInstancedStruct> LoadCustomDataFromJson(const FString &FilePath, const TArray<const UScriptStruct *> &StructTypes, EResultJsonLoad& ResultJsonLoad);
 
-    static bool DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct *StructType, FInstancedStruct &OutInstancedStruct);
+    static EResultJsonLoad DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct *StructType, FInstancedStruct &OutInstancedStruct);
     static TSharedPtr<FJsonObject> SerializeInstancedStructToJson(const FInstancedStruct &Instance);
 
     /**
@@ -148,6 +154,13 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = JsonUtils)
     static void WriteStringToFile(const FString &FilePath, const FString &String, bool &bOutSuccess, FString &OutInfoMessage);
+    
+    
+    static bool ValidateJsonMatchesStruct(
+        const UScriptStruct* Struct,
+        const TSharedPtr<FJsonObject>& JsonObject,
+        TArray<FString>* OutMissingFields = nullptr,   // In struct, missing from JSON
+        TArray<FString>* OutExtraFields = nullptr);      // In JSON, not in struct
 
 private:
     /**

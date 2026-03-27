@@ -21,6 +21,40 @@ void UAtkDataManagerFunctionLibrary::WriteStringToFile(const FString& FilePath, 
 	OutInfoMessage = OutInfoMessage = FString::Printf(TEXT("Write string to file succeeded"));
 }
 
+bool UAtkDataManagerFunctionLibrary::ValidateJsonMatchesStruct(const UScriptStruct* Struct,
+	const TSharedPtr<FJsonObject>& JsonObject, TArray<FString>* OutMissingFields, TArray<FString>* OutExtraFields)
+{
+	if (!Struct || !JsonObject.IsValid()) return false;
+
+	// Collect all reflected property names
+	TSet<FString> StructFields;
+	for (TFieldIterator<FProperty> It(Struct, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	{
+		StructFields.Add(It->GetAuthoredName());
+	}
+
+	// Collect all JSON keys
+	TSet<FString> JsonFields;
+	for (const auto& Pair : JsonObject->Values)
+	{
+		JsonFields.Add(Pair.Key);
+	}
+
+	// Fields in struct but missing from JSON
+	TSet<FString> Missing = StructFields.Difference(JsonFields);
+
+	// Fields in JSON but not in struct
+	TSet<FString> Extra = JsonFields.Difference(StructFields);
+
+	if (OutMissingFields)
+		OutMissingFields->Append(Missing.Array());
+
+	if (OutExtraFields)
+		OutExtraFields->Append(Extra.Array());
+
+	return Missing.IsEmpty() && Extra.IsEmpty();
+}
+
 TSharedPtr<FJsonObject> UAtkDataManagerFunctionLibrary::ReadJsonFile(const FString& FilePath)
 {
 	FString jsonString;
@@ -96,12 +130,12 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::GetArrayOfInstancedStru
 	return TArray<FInstancedStruct>();
 }
 
-TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(const FString& FilePath, const UScriptStruct* structType)
+TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(const FString& FilePath, const TArray<const UScriptStruct*>& StructTypes, EResultJsonLoad& ResultJsonLoad)
 {
 	TArray<TSharedPtr<FJsonValue>> JsonArray = ReadJsonFileArray(FilePath); 
 	TArray<FInstancedStruct> OutArray;
-	int32 index = 0;
-	FInstancedStruct InstancedStruct;
+	ResultJsonLoad = EResultJsonLoad::Success;
+	
 	for(const auto& JsonValue : JsonArray)
 	{
 		TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
@@ -113,41 +147,24 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 
 		// Deserialize the object into an FInstancedStruct
 		FInstancedStruct NewInstancedStruct;
-		if (DeserializeJsonToFInstancedStruct(JsonObject, structType, NewInstancedStruct))
-		{
-			// ObjectHasMissingFields(JsonObject, index, FilePath, structType);
-			OutArray.Add(MoveTemp(NewInstancedStruct));
-		}
-
-		index++;
-	}
-	return OutArray;
-}
-
-TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(const FString& FilePath,
-                                                                             const TArray<const UScriptStruct*>& StructTypes)
-{
-	TArray<TSharedPtr<FJsonValue>> JsonArray = ReadJsonFileArray(FilePath); 
-	TArray<FInstancedStruct> OutArray;
-	for(const auto& JsonValue : JsonArray)
-	{
-		TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
-		if (!JsonObject.IsValid())
-		{
-			UE_LOG(LogUtilityModule, Error, TEXT("Invalid JSON object in array."));
-			continue;
-		}
-
-		// Deserialize the object into an FInstancedStruct
-		FInstancedStruct NewInstancedStruct;
+		EResultJsonLoad Result = EResultJsonLoad::Success;
 		for(const auto& StructType : StructTypes)
 		{
-			const bool bResult = DeserializeJsonToFInstancedStruct(JsonObject, StructType, NewInstancedStruct);
-			if (bResult && !ObjectHasMissingFields(JsonObject, StructType))
+			Result = DeserializeJsonToFInstancedStruct(JsonObject, StructType, NewInstancedStruct);
+			if (Result != EResultJsonLoad::Failed)
 			{
 				OutArray.Add(MoveTemp(NewInstancedStruct));
 				break;
 			}
+		}
+		
+		if (Result == EResultJsonLoad::Partial || Result == EResultJsonLoad::Failed)
+		{
+			FString JsonString;
+			TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+			FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+			UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize JSON object: %s"), *JsonString);
+			ResultJsonLoad = Result;
 		}
 	}
 	return OutArray;
@@ -159,8 +176,9 @@ void UAtkDataManagerFunctionLibrary::WriteInstancedStructArrayToJson(const FStri
 	TArray<TSharedPtr<FJsonValue>> JsonValueArray;
 	for (const auto& Value : Array)
 	{
-		TSharedPtr<FJsonObject> StructObject = SerializeInstancedStructToJson(Value);
-		JsonValueArray.Add(MakeShared<FJsonValueObject>(StructObject));
+		TSharedPtr<FJsonObject> JsonObject = SerializeInstancedStructToJson(Value);
+		JsonObject->SetStringField(TEXT("StructType"), Value.GetScriptStruct()->GetAuthoredName());
+		JsonValueArray.Add(MakeShared<FJsonValueObject>(JsonObject));
 	}
 
 	bool bResult = false;
@@ -173,19 +191,42 @@ void UAtkDataManagerFunctionLibrary::WriteInstancedStructArrayToJson(const FStri
 	}
 }
 
-bool UAtkDataManagerFunctionLibrary::DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct* StructType, FInstancedStruct& OutInstancedStruct)
+EResultJsonLoad UAtkDataManagerFunctionLibrary::DeserializeJsonToFInstancedStruct(const TSharedPtr<FJsonObject> JsonObject, const UScriptStruct* StructType, FInstancedStruct& OutInstancedStruct)
 {
-	if(!StructType)
-		return false;
-	// Initialize the FInstancedStruct with the resolved type
+	if (!StructType || !JsonObject.IsValid())
+		return EResultJsonLoad::Failed;
+
+	// Check discriminator field matches this struct type
+	FString TypeName;
+	if (!JsonObject->TryGetStringField(TEXT("StructType"), TypeName))
+	{
+		UE_LOG(LogUtilityModule, Error, TEXT("JSON object missing 'StructType' field."));
+		return EResultJsonLoad::Failed;
+	}
+
+	if (TypeName != StructType->GetName()) 
+		return EResultJsonLoad::Failed; // Not this type, try the next one
+
 	OutInstancedStruct.InitializeAs(StructType);
 
-	// Convert the JSON data into the struct instance
-	if (!FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), StructType, OutInstancedStruct.GetMutableMemory(), 0, 0))
+	if (!FJsonObjectConverter::JsonObjectToUStruct(
+		JsonObject.ToSharedRef(),
+		StructType,
+		OutInstancedStruct.GetMutableMemory(),
+		0, 0))
 	{
-		return false;
+		UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize '%s' from JSON."), *TypeName);
+		OutInstancedStruct.Reset();
+		return EResultJsonLoad::Failed;
 	}
-	return true;
+	
+	JsonObject->RemoveField(TEXT("StructType"));
+	if (!ValidateJsonMatchesStruct(StructType, JsonObject, nullptr, nullptr))
+	{
+		return EResultJsonLoad::Partial;
+	}
+
+	return EResultJsonLoad::Success;
 }
 
 TSharedPtr<FJsonObject> UAtkDataManagerFunctionLibrary::SerializeInstancedStructToJson(const FInstancedStruct& Instance)
