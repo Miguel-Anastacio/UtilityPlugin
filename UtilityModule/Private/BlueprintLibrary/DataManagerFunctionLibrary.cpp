@@ -158,14 +158,14 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 			}
 		}
 		
-		if (Result == EResultJsonLoad::Partial || Result == EResultJsonLoad::Failed)
-		{
-			FString JsonString;
-			TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
-			FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-			UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize JSON object: %s"), *JsonString);
-			ResultJsonLoad = Result;
-		}
+		// if (Result == EResultJsonLoad::Partial || Result == EResultJsonLoad::Failed)
+		// {
+		// 	FString JsonString;
+		// 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+		// 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+		// 	UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize JSON object: %s"), *JsonString);
+		// 	ResultJsonLoad = Result;
+		// }
 	}
 	return OutArray;
 }
