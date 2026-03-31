@@ -17,8 +17,6 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "MiscFunctionLibrary")
     static FColor ConvertHexStringToRGB(const FString& Color);
     
-    static FString ToPackagePath(const FString& AbsolutePath);
-    static FString ToAbsolutePath(const FString& PackagePath);
 private:
     static auto HexToDecimal(const FString& Hex) -> int32;
   

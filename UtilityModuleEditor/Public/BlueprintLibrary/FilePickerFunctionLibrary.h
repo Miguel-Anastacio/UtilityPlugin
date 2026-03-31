@@ -25,5 +25,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "FilePicker")
 	static void OpenDirectoryDialog(const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
+	
+	static FString ToPackagePath(const FString& AbsolutePath);
+	static FString ToAbsolutePath(const FString& PackagePath);
 };
 

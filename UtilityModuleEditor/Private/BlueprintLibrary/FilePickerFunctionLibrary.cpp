@@ -71,3 +71,19 @@ void UAtkFilePickerFunctionLibrary::OpenDirectoryDialog(const FString& DialogTit
 	}
     #endif
 }
+
+FString UAtkFilePickerFunctionLibrary::ToAbsolutePath(const FString& PackagePath)
+{
+	FString AbsolutePath;
+	FPackageName::TryConvertLongPackageNameToFilename(PackagePath, AbsolutePath);
+	return AbsolutePath + TEXT(".json"); // re-append extension
+}
+
+FString UAtkFilePickerFunctionLibrary::ToPackagePath(const FString& AbsolutePath)
+{
+	// Strip extension before converting
+	FString PathNoExt = FPaths::ChangeExtension(AbsolutePath, TEXT(""));
+	FString PackagePath;
+	FPackageName::TryConvertFilenameToLongPackageName(PathNoExt, PackagePath);
+	return PackagePath;
+}
