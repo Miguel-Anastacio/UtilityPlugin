@@ -60,13 +60,13 @@ TSharedPtr<FJsonObject> UAtkDataManagerFunctionLibrary::ReadJsonFile(const FStri
 	FString jsonString;
 	if(!FFileHelper::LoadFileToString(jsonString, *FilePath))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Error loading file '%s'"), *FilePath);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Error loading file '%s'"), *FilePath);
 		return nullptr;
 	}
 	TSharedPtr<FJsonObject> jsonObject;
 	if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(jsonString), jsonObject))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Read Json Failed - error parsing file '%s'"), *FilePath);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Read Json Failed - error parsing file '%s'"), *FilePath);
 	}
 	return jsonObject;
 }
@@ -76,13 +76,13 @@ TArray<TSharedPtr<FJsonValue>> UAtkDataManagerFunctionLibrary::ReadJsonFileArray
 	FString jsonString;
 	if(!FFileHelper::LoadFileToString(jsonString, *FilePath))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Error loading file '%s'"), *FilePath);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Error loading file '%s'"), *FilePath);
 		return TArray<TSharedPtr<FJsonValue>>();
 	}
 	TArray<TSharedPtr<FJsonValue>> jsonValueArray;
 	if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(jsonString), jsonValueArray))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Read Json Failed - error parsing file '%s'"), *FilePath);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Read Json Failed - error parsing file '%s'"), *FilePath);
 	}
 	return jsonValueArray;
 }
@@ -92,7 +92,7 @@ TArray<TSharedPtr<FJsonValue>> UAtkDataManagerFunctionLibrary::ReadJsonFileArray
 	TArray<TSharedPtr<FJsonValue>> JsonValues;
 	if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(JsonString), JsonValues))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Read Json Failed - error parsing json string: '%s'"), *JsonString);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Read Json Failed - error parsing json string: '%s'"), *JsonString);
 	}
 	return JsonValues;
 }
@@ -102,7 +102,7 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::GetArrayOfInstancedStru
 {
 	if(!DataTable)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("GetArrayOfInstancedStructs : Data Table is NULL"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("GetArrayOfInstancedStructs : Data Table is NULL"));
 		return TArray<FInstancedStruct>();
 	}
 
@@ -141,7 +141,7 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 		TSharedPtr<FJsonObject> JsonObject = JsonValue->AsObject();
 		if (!JsonObject.IsValid())
 		{
-			UE_LOG(LogUtilityModule, Error, TEXT("Invalid JSON object in array."));
+			UE_LOG(LogUtilityModule, Warning, TEXT("Invalid JSON object in array."));
 			continue;
 		}
 
@@ -163,7 +163,7 @@ TArray<FInstancedStruct> UAtkDataManagerFunctionLibrary::LoadCustomDataFromJson(
 		// 	FString JsonString;
 		// 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 		// 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-		// 	UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize JSON object: %s"), *JsonString);
+		// 	UE_LOG(LogUtilityModule, Warning, TEXT("Failed to deserialize JSON object: %s"), *JsonString);
 		// 	ResultJsonLoad = Result;
 		// }
 	}
@@ -186,8 +186,8 @@ void UAtkDataManagerFunctionLibrary::WriteInstancedStructArrayToJson(const FStri
 	WriteJson(FilePath, JsonValueArray, bResult, OutInfoMessage);	
 	if(!bResult)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Failed to Save Instanced Struct Array: %s"), *OutInfoMessage);
-		UE_LOG(LogUtilityModule, Error, TEXT("Failed to Save Instanced Struct Array, filePath: %s"), *FilePath);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Failed to Save Instanced Struct Array: %s"), *OutInfoMessage);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Failed to Save Instanced Struct Array, filePath: %s"), *FilePath);
 	}
 }
 
@@ -200,7 +200,7 @@ EResultJsonLoad UAtkDataManagerFunctionLibrary::DeserializeJsonToFInstancedStruc
 	FString TypeName;
 	if (!JsonObject->TryGetStringField(TEXT("StructType"), TypeName))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("JSON object missing 'StructType' field."));
+		UE_LOG(LogUtilityModule, Warning, TEXT("JSON object missing 'StructType' field."));
 		return EResultJsonLoad::Failed;
 	}
 
@@ -215,7 +215,7 @@ EResultJsonLoad UAtkDataManagerFunctionLibrary::DeserializeJsonToFInstancedStruc
 		OutInstancedStruct.GetMutableMemory(),
 		0, 0))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Failed to deserialize '%s' from JSON."), *TypeName);
+		UE_LOG(LogUtilityModule, Warning, TEXT("Failed to deserialize '%s' from JSON."), *TypeName);
 		OutInstancedStruct.Reset();
 		return EResultJsonLoad::Failed;
 	}
@@ -237,7 +237,7 @@ TSharedPtr<FJsonObject> UAtkDataManagerFunctionLibrary::SerializeInstancedStruct
 		return JsonObject;
 	}
 
-	UE_LOG(LogUtilityModule, Error, TEXT("Failed to serialize instanced struct of type %s"), *Instance.GetScriptStruct()->GetName());
+	UE_LOG(LogUtilityModule, Warning, TEXT("Failed to serialize instanced struct of type %s"), *Instance.GetScriptStruct()->GetName());
 	return nullptr;
 }
 
@@ -305,5 +305,5 @@ bool UAtkDataManagerFunctionLibrary::ObjectHasMissingFields(const TSharedPtr<FJs
 
 void UAtkDataManagerFunctionLibrary::LogReadJsonFailed(const FString& FilePath)
 {
-	UE_LOG(LogUtilityModule, Error, TEXT("Read Json Failed - some entries do not match the structure defined '%s'"), *FilePath);
+	UE_LOG(LogUtilityModule, Warning, TEXT("Read Json Failed - some entries do not match the structure defined '%s'"), *FilePath);
 }

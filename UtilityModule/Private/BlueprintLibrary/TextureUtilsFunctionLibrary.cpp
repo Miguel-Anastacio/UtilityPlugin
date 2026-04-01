@@ -13,7 +13,7 @@ TArray<uint8> UAtkTextureUtilsFunctionLibrary::ReadTextureToArray(UTexture2D* Te
 	TArray<uint8> DataArray;
 	if(!IsTextureValid(Texture))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Read Texture to Array not Valid Texture"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Read Texture to Array not Valid Texture"));
 		return DataArray;
 	}
 #if WITH_EDITOR
@@ -41,7 +41,7 @@ std::vector<uint8> UAtkTextureUtilsFunctionLibrary::ReadTextureToVector(UTexture
 {
     if(!IsTextureValid(Texture))
     {
-        UE_LOG(LogUtilityModule, Error, TEXT("Read Texture to Buffer not Valid Texture"));
+        UE_LOG(LogUtilityModule, Warning, TEXT("Read Texture to Buffer not Valid Texture"));
         return {};
     }
         
@@ -70,7 +70,7 @@ FColor UAtkTextureUtilsFunctionLibrary::GetColorFromUV(uint32 Width, uint32 Heig
 {
 	if(Width * Height * 4 != DataBuffer.Num())
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Buffer size does not match texture size"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Buffer size does not match texture size"));
 		return FColor();
 	}
 	
@@ -88,7 +88,7 @@ FColor UAtkTextureUtilsFunctionLibrary::GetColorFromUV(UTexture2D* Texture, cons
 {
 	if(!IsTextureValid(Texture))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Get Color From UV not Valid Texture"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Get Color From UV not Valid Texture"));
 		return FColor();
 	}
 
@@ -97,7 +97,7 @@ FColor UAtkTextureUtilsFunctionLibrary::GetColorFromUV(UTexture2D* Texture, cons
 	
 	if(Width * Height * 4 != DataBuffer.Num())
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Buffer size does not match texture size"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Buffer size does not match texture size"));
 		return FColor();
 	}
 
@@ -115,13 +115,13 @@ FColor UAtkTextureUtilsFunctionLibrary::GetColorFromUV(UTexture2D* Texture, cons
 {
 	if(!IsTextureValid(Texture))
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Get Color From UV not Valid Texture"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Get Color From UV not Valid Texture"));
 		return FColor();
 	}
 	
 	if(!DataBuffer)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Null Buffer"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Null Buffer"));
 		return FColor();
 	}
 
@@ -230,7 +230,7 @@ int32 UAtkTextureUtilsFunctionLibrary::GetIndexFromUV(const FVector2D& Uv, uint3
 
 	if (Index > Width * Height * 4 - 4)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("Invalid index from uvs"));
+		UE_LOG(LogUtilityModule, Warning, TEXT("Invalid index from uvs"));
 		bOutResult = false;
 		return -1;
 	}
@@ -247,14 +247,14 @@ bool UAtkTextureUtilsFunctionLibrary::IsTextureValid(const UTexture2D* Texture)
 	}
 	if(Texture->CompressionSettings != TC_EditorIcon)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("%s has wrong compression settings, please use UserInterface"), *Texture->GetName());
+		UE_LOG(LogUtilityModule, Warning, TEXT("%s has wrong compression settings, please use UserInterface"), *Texture->GetName());
 		return false;
 	}
 	// in editor check mip map settings
 #if WITH_EDITOR
 	if(Texture->MipGenSettings != TMGS_NoMipmaps)
 	{
-		UE_LOG(LogUtilityModule, Error, TEXT("%s has wrong Mipmap settings, please use NoMipmaps"), *Texture->GetName());
+		UE_LOG(LogUtilityModule, Warning, TEXT("%s has wrong Mipmap settings, please use NoMipmaps"), *Texture->GetName());
 		return false;
 	}
 #endif

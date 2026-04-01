@@ -93,7 +93,7 @@ FColor UAtkMiscFunctionLibrary::ConvertHexStringToRGB(const FString& Color)
 		return ColorValue;
 	}
 
-	UE_LOG(LogUtilityModule, Error, TEXT("Color is not hexadecimal format"));
+	UE_LOG(LogUtilityModule, Warning, TEXT("Color is not hexadecimal format"));
 	return FColor();
 }
 
