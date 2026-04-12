@@ -104,13 +104,26 @@ public:
     template <typename T>
     static T GetStructAsType(const FInstancedStruct &InstancedStruct)
     {
-        return CastChecked<T>(InstancedStruct.GetMemory());
+        if (!InstancedStruct.IsValid() || InstancedStruct.GetScriptStruct() != T::StaticStruct())
+        {
+            ensureMsgf(false, TEXT("GetStructAsType: InstancedStruct is invalid or not of requested type."));
+            return T();
+        }
+
+        const T* TypedData = reinterpret_cast<const T*>(InstancedStruct.GetMemory());
+        return TypedData ? *TypedData : T();
     }
     
     template <typename T>
     static T* GetStructAsTypeMutable(FInstancedStruct &InstancedStruct)
     {
-        return CastChecked<T>(InstancedStruct.GetMutableMemory());
+        if (!InstancedStruct.IsValid() || InstancedStruct.GetScriptStruct() != T::StaticStruct())
+        {
+            ensureMsgf(false, TEXT("GetStructAsTypeMutable: InstancedStruct is invalid or not of requested type."));
+            return nullptr;
+        }
+
+        return reinterpret_cast<T*>(InstancedStruct.GetMutableMemory());
     }
 
     // Iterates through all properties of a struct, pass function to perform for each property
