@@ -217,9 +217,76 @@ FColor UAtkTextureUtilsFunctionLibrary::GetColorFromIndex(uint32 Index, const ui
 		DataBuffer[Index],
 		DataBuffer[Index + 3]);
 }
+FVector UAtkTextureUtilsFunctionLibrary::PixelToWorld(const UStaticMeshComponent* MeshComp, const FVector2D& Pixel, const FVector2D& TextureSize, EPixelToWorldMode Mode)
+{
+	switch (Mode)
+	{
+	case EPixelToWorldMode::FlatPlane:
+		return PixelToWorldOnPlane(MeshComp->GetComponentTransform(), MeshComp->GetStaticMesh()->GetBounds(), Pixel, TextureSize);
+	case EPixelToWorldMode::Sphere:
+		return PixelToWorldOnSphere(MeshComp, Pixel, TextureSize);
+	}
+	return FVector::ZeroVector;
+}
+
+FVector UAtkTextureUtilsFunctionLibrary::PixelToWorldOnSphere(
+	const UStaticMeshComponent* MeshComp,
+	const FVector2D& Pixel,
+	const FVector2D& TextureSize)
+{
+	const FVector2D UV = Pixel / TextureSize;
+
+	// UV → spherical angles
+	// U = 0..1 maps to longitude -180..180
+	// V = 0..1 maps to latitude   90..-90 (top to bottom)
+	const float Longitude = FMath::Lerp(-180.0f, 180.0f, UV.X);
+	const float Latitude  = FMath::Lerp( 90.0f, -90.0f,  UV.Y);
+
+	const float LonRad = FMath::DegreesToRadians(Longitude);
+	const float LatRad = FMath::DegreesToRadians(Latitude);
+
+	// Spherical → cartesian (unit sphere)
+	const FVector UnitPos(
+		FMath::Cos(LatRad) * FMath::Cos(LonRad),
+		FMath::Cos(LatRad) * FMath::Sin(LonRad),
+		FMath::Sin(LatRad)
+	);
+
+	// Scale by sphere radius (use bounds extent as radius)
+	const FVector WorldCenter = MeshComp->Bounds.Origin;
+	const float Radius = MeshComp->Bounds.SphereRadius;
+
+	return WorldCenter + UnitPos * Radius;
+}
+
+FVector UAtkTextureUtilsFunctionLibrary::PixelToWorldOnPlane(const FTransform& MeshWorldTransform, const FBoxSphereBounds& LocalBounds, const FVector2D& Pixel, const FVector2D& TextureSize)
+{
+	const FVector2D UV = Pixel / TextureSize;
+
+	const FVector BoundsMin = LocalBounds.Origin - LocalBounds.BoxExtent;
+	const FVector BoundsMax = LocalBounds.Origin + LocalBounds.BoxExtent;
+
+	const FVector LocalPos(
+		FMath::Lerp(BoundsMin.X, BoundsMax.X, UV.X),
+		FMath::Lerp(BoundsMin.Y, BoundsMax.Y,  UV.Y),
+		BoundsMax.Z
+	);
+
+	return MeshWorldTransform.TransformPosition(LocalPos);
+
+	// // Optional: raycast down onto the actual deformed surface
+	// FHitResult Hit;
+	// FVector RayStart = FlatPos + FVector(0, 0, 100.0f);
+	// FVector RayEnd   = FlatPos - FVector(0, 0, 10000.0f);
+	//
+	// if (MeshComp->LineTraceComponent(Hit, RayStart, RayEnd, FCollisionQueryParams::DefaultQueryParam))
+	// {
+	// 	return Hit.ImpactPoint;
+	// }
+}
 
 int32 UAtkTextureUtilsFunctionLibrary::GetIndexFromUV(const FVector2D& Uv, uint32 Width, uint32 Height,
-	bool& bOutResult)
+                                                      bool& bOutResult)
 {
 	const uint32 y = Uv.Y * Height;
 	const uint32 x = Uv.X * Width;

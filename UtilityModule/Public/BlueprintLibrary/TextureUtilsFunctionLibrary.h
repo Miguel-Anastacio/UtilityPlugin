@@ -7,10 +7,18 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "TextureUtilsFunctionLibrary.generated.h"
 class UTexture2D;
+UENUM(BlueprintType)
+enum class EPixelToWorldMode : uint8
+{
+	FlatPlane,
+	Sphere
+};
+
 UCLASS()
 class UTILITYMODULE_API UAtkTextureUtilsFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
 
 public:
 	static std::vector<uint8> ReadTextureToVector(UTexture2D* Texture);
@@ -26,7 +34,11 @@ public:
 	static FColor GetColorFromIndex(uint32 Index, const TArray<uint8>& DataBuffer);
 	static FColor GetColorFromIndex(uint32 Index, const uint8* DataBuffer);
 	
+	static FVector PixelToWorld(const UStaticMeshComponent* MeshComp, const FVector2D& Pixel, const FVector2D& TextureSize, EPixelToWorldMode Mode);
+	
 private:
+	static FVector PixelToWorldOnPlane(const FTransform& MeshWorldTransform, const FBoxSphereBounds& LocalBounds, const FVector2D& Pixel, const FVector2D& TextureSize);	
+	static FVector PixelToWorldOnSphere(const UStaticMeshComponent* MeshComp, const FVector2D& Pixel, const FVector2D& TextureSize);	
 	static int32 GetIndexFromUV(const FVector2D& Uv, uint32 Width, uint32 Height, bool& bOutResult);
 
 	static bool IsTextureValid(const UTexture2D* Texture);
