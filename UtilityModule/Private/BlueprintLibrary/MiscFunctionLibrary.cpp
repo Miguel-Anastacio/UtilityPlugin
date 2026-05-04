@@ -6,33 +6,38 @@
 #include "Misc/ScopedSlowTask.h"
 #include "Misc/FeedbackContext.h"
 
-static float CurrentProgress = 0.0f;
-void UAtkMiscFunctionLibrary::ExecuteSlowTaskWithProgressBar(TFunction<void(TFunction<void(float, std::string_view)>)> Task)
+void UAtkMiscFunctionLibrary::ExecuteSlowTaskWithProgressBar(
+	TFunction<void(TFunction<void(float, std::string_view)>)> Task)
 {
-	CurrentProgress = 0.0f;
 	constexpr float AmountOfWork = 100.0f;
-	FScopedSlowTask SlowTask = FScopedSlowTask(AmountOfWork, NSLOCTEXT("SlowTask", "SlowTask", "Processing..."), true);
-	SlowTask.MakeDialog();
+	FScopedSlowTask SlowTask(AmountOfWork, NSLOCTEXT("SlowTask", "SlowTask", "Processing..."), true);
+	SlowTask.MakeDialog(false, true); // second param = show cancel button, third = force repaint
+
+	float CumulativeProgress = 0.0f;
+
 	auto ProgressCallback = [&](float Progress, std::string_view message)
 	{
-		// CurrentProgress += Progress;
-		// // Update the progress bar
-		// SlowTask.EnterProgressFrame(
-		// 	CurrentProgress,
-		// 	FText::Format(
-		// 		NSLOCTEXT("SlowTask", "Processing", "({1})"),
-		// 		FText::AsNumber(FMath::RoundToInt(CurrentProgress)), // First parameter: Progress as a percentage
-		// 		FText::FromString(FString(message.data()))    // Second parameter: Convert std::string_view
-		// 	)
-		// );
+		CumulativeProgress += Progress;
+		SlowTask.EnterProgressFrame(
+			Progress,
+			FText::Format(
+				NSLOCTEXT("SlowTask", "Processing", "{1}"),
+				FText::AsNumber(FMath::RoundToInt(CumulativeProgress)),
+				FText::FromString(FString(message.data()))
+			)
+		);
 
-		UE_LOG(LogUtilityModule, Warning, TEXT("Message: %s"), *FString(message.data()));
+		// Force Slate to flush and repaint immediately
+		if (FSlateApplication::IsInitialized())
+		{
+			FSlateApplication::Get().PumpMessages();
+			FSlateApplication::Get().Tick();
+		}
 	};
 
-	// execute slow task and pass progress callback
-	if(Task)
+	if (Task)
 	{
-        Task(ProgressCallback);
+		Task(ProgressCallback);
 	}
 }
 
